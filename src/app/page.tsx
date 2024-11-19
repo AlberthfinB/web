@@ -1,5 +1,10 @@
-import Image from "next/image";
+
+import SwiperComponent from "@/view/components/swiper"
 
 export default function Home() {
-   return <div className="text-yellow-600">hello world</div>;
+   return (
+      <div className="">
+         <SwiperComponent/>
+      </div>
+   )
 }
