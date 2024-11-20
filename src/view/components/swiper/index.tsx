@@ -15,23 +15,34 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 interface ISwiper {
     name_event:string;
     image_event:string;
+    event_id : number
 }
 
 export default function SwiperComponent() {
   const router = useRouter();
-  const [data, setData] = useState<ISwiper[]>([])
-
+  const [data, setData] = useState<ISwiper[]>([]);
+  
   const getEventComing = async () => {
     try {
       const response = await axiosInstance.get("/management/events-coming");
       setData(response.data.data);
+      
     } catch (err) {
       ErrorHandler(err);
     }
   };
+ 
+  const handlerClick = async(event_id:number) => {
+    router.push(`/event-detail/${event_id}`)
+  //   router.push({
+  //     pathname: '/event-detail/[id]',
+  //     query: {id:},
+  // });
+  }
 
   useEffect(() => {
     getEventComing();
+    
   }, []);
 
   return (
@@ -61,14 +72,17 @@ export default function SwiperComponent() {
         {data &&
           data.map((event, index) => (
             <SwiperSlide key={index}>
-              <div className="relative w-full h-auto ">
+              <div className="relative w-full h-auto cursor-pointer"
+               >
                 <Image
                   src={event.image_event}
                   alt={event.name_event || "Event Image"}
                   width={200}
                   height={200}
                   layout="responsive"
-                  className="object-cover rounded-lg"
+                  className="rounded-lg"
+                  style={{ objectFit: "cover" }}
+                  onClick={() => handlerClick(event?.event_id)}
                 />
                 <h3 className="mt-2 text-left pl-7 text-sm font-semibold lg:text-center lg:text-lg lg:p-0">
                   {event.name_event}
