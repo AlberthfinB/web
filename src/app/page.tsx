@@ -1,10 +1,6 @@
-
-import SwiperComponent from "@/view/components/swiper"
-
+import HomeView from "@/view/pages/home"
 export default function Home() {
    return (
-      <div className="">
-         <SwiperComponent/>
-      </div>
+    <HomeView/>
    )
 }

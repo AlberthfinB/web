@@ -5,4 +5,72 @@
 
 :root{
   background-color: white;
+
+  color: black;
+}
+
+.primary-color {
+  background-color: #D1410C;
+  color: white;
+}
+
+.primary-color:hover {
+  background-color: #D1410C;
+  color: black;
+}
+
+.text-primary {
+  color: #D1410C;
+}
+
+.navbar {
+  position: fixed !important;
+  top: 0;
+  width: 100%;
+  background-color: white;
+  color: #D1410C;
+  padding: 10px 20px;
+  z-index: 1000; /* Agar selalu di atas elemen lainnya */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Opsional untuk efek */
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar li {
+  margin-right: 20px;
+}
+
+.navbar li a {
+  color: #D1410C;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+body {
+  padding-top: 60px; /* Berikan padding agar konten tidak tertutup navbar */
+}
+
+.btn-bg-white{
+  background-color: white;
+  color: #D1410C;
+  border: none;
+  margin-right: 10px;
+}
+
+.btn-bg-white:hover{
+  background-color: #D1410C;
+  color: white;
+  border: none;
+}
+
+.btn-bg-primary{
+  background-color: #D1410C;
+  color: white;
+  border: none;
+  margin-right: 10px;
 }

@@ -1,9 +1,7 @@
-
+import EventList from "./components/home"
 
 export default function HomeView () {
     return (
-        <div>
-            <div>home</div>
-        </div>
+       <EventList/>
     )
 }
