@@ -1,5 +1,5 @@
-import LoginView from "@/view/pages";
+import LoginView from "@/view/pages/login";
 
-export default function Login () {
-    return (<LoginView/>)
+export default function Login() {
+    return (<LoginView />)
 }
