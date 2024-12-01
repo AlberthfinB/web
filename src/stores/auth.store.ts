@@ -22,5 +22,5 @@ export interface IUser {
        deleteCookie("access_token");
     },
  }));
- 
+  
  export default useAuthStore;
