@@ -18,6 +18,7 @@ interface IRegisterFormProps {
 export default function RegisterForm({ role }: IRegisterFormProps) {
    const router = useRouter();
    const [loading, setLoading] = useState(false);
+   const [hasReferalCode, setHasReferalCode] = useState(false);
 
    const register = async (params: IRegister) => {
       setLoading(true);
@@ -140,6 +141,19 @@ export default function RegisterForm({ role }: IRegisterFormProps) {
                                  </small>
                               ) : null}
                               {values.role === "Participant" && (
+                                 <div className="relative form-control mt-2 flex flex-row items-center">
+                                    <label className="swap">
+                                       <input
+                                          type="checkbox"
+                                          checked={hasReferalCode}
+                                          onChange={() => setHasReferalCode(!hasReferalCode)}
+                                          className="toggle toggle-accent mr-3"
+                                       />
+                                    </label>
+                                    <label htmlFor="hasReferalCode" className="mr-3 text-white">I have a referral code</label>
+                                 </div>
+                              )}
+                              {hasReferalCode && (
                                  <div className="relative form-control mt-2">
                                     <div>
                                        <input
@@ -164,7 +178,7 @@ export default function RegisterForm({ role }: IRegisterFormProps) {
                                           Referral Code
                                        </label>
                                     </div>
-                                    {values.referal_code && values.referal_code.length === 16 && (
+                                    {values.referal_code && values.referal_code.length > 16 && (
                                        <small className="text-red-500 text-sm font-bold bg-white/55 rounded px-3 py-1 mt-2">
                                           Referral Code can only be 16 characters.
                                        </small>
