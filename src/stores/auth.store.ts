@@ -5,6 +5,7 @@ export interface IUser {
     name: string;
     email: string;
     role: string;
+    user_id:number;
  }
 
  interface IAuthStore {

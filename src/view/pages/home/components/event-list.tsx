@@ -5,10 +5,19 @@ import ErrorHandler from "@/app/lib/error-handler";
 import { useRouter } from "next/navigation";
 import ReactPaginate from "react-paginate";
 import { useDebounce } from "use-debounce";
-import { IEventComing } from "../types";
-import { ICategoryEvent } from "../types";
 
+interface IEventComing {
+  name_event: string;
+  image_event: string;
+  event_id: number;
+  description: string;
+  location: string;
+}
 
+interface ICategoryEvent {
+  event_category_id: number;
+  event_category_name: string;
+}
 
 const EventList = () => {
   const [eventComing, setEventComing] = useState<IEventComing[]>([]);
@@ -37,7 +46,7 @@ const EventList = () => {
       seTotalData(response.data?.pagination?.totalItems);
       setTotalPage(response.data?.pagination?.totalPages);
     } catch (err) {
-      ErrorHandler(err);
+      ErrorHandler(err as Error);
     }
   };
 
@@ -46,7 +55,7 @@ const EventList = () => {
       const response = await axiosInstance.get("/master/category");
       setCategoryEvent(response.data.data);
     } catch (err) {
-      ErrorHandler(err);
+      ErrorHandler(err as Error);
     }
   };
 
@@ -61,14 +70,12 @@ const EventList = () => {
 
   const handleSearch = (e :React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setPageNumber(1); // reset halaman ke awal saat filter diterapkan
-    console.log(handleSearch);
+    setPageNumber(1); // Reset halaman ke awal saat filter diterapkan
   };
 
   const handleSearchLocation = (e : React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
     setPageNumber(1);
-    console.log(handleSearchLocation);
   };
 
   const changePage = async (e : {selected:number}) => {

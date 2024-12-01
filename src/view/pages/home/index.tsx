@@ -1,7 +1,15 @@
-import EventList from "./components/home"
 
-export default function HomeView () {
-    return (
-       <EventList/>
-    )
+import EventComplete from "./components/event-completed";
+import EventList from "./components/event-list";
+
+export default function HomeView() {
+  return (
+    <div>
+      <div>
+        <EventList />
+        <hr/>
+        <EventComplete />
+      </div>
+    </div>
+  );
 }
