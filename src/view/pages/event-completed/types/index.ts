@@ -1,4 +1,4 @@
-export interface IEventDetail {
+export interface IEventDetails {
     name_event: string;
     image_event: string;
     description: string;
@@ -7,7 +7,10 @@ export interface IEventDetail {
     seats: number;
     ticket_price: number;
     promo_event: string;
-  }
-export  interface EventDetailProps {
+    available_seats: number;
+    promotion_type_id: number;
+}
+
+export interface EventDetailProps {
     event_id: string;
-  }
+}

@@ -63,11 +63,15 @@ export default function NavbarMenu() {
   };
 
   const handleEvent = async () => {
-    router.push(`/create-event`);
+    router.push(`/event`);
   };
 
   const handleMain = async () => {
     router.push(`/`);
+  };
+
+  const handleReviews = async () => {
+    router.push(`/reviews`);
   };
 
   return (
@@ -77,11 +81,21 @@ export default function NavbarMenu() {
       </div>
       <div className="flex-none gap-2">
         <ul className="menu menu-horizontal px-1 flex items-center">
-          <li>
-            <div className="font-bold" onClick={handleEvent}>
-              Create Event
-            </div>
-          </li>
+        {user?.role && user?.role === "Event Organizer" && (
+            <li>
+              <div className="font-bold" onClick={handleEvent}>
+                Create Event
+              </div>
+            </li>
+          )}
+          {user?.role && user?.role === "Participant" && (
+            <li>
+              <div className="font-bold" onClick={handleReviews}>
+                Reviews
+              </div>
+            </li>
+          )}
+
           <li>
             {user ? (
               <div className="flex-none gap-1">

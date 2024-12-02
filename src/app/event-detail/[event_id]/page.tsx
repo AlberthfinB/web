@@ -1,5 +1,5 @@
 "use client"
-import EventDetail from "@/view/pages/event-detail/component";
+import EventDetail from "@/view/pages/event-detail/component/event-detail";
 import { usePathname } from "next/navigation";
 
 
