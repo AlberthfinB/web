@@ -1,13 +1,76 @@
 "use client";
-import useAuthStore from "@/stores/auth.store";
+import ErrorHandler from "@/app/lib/error-handler";
+import axiosInstance from "@/app/utils/axios";
+import useAuthStore, { IUser } from "@/stores/auth.store";
+import { getCookie } from "cookies-next";
+import { jwtDecode } from "jwt-decode";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 export default function NavbarMenu() {
   const router = useRouter();
-  const { user, clearAuth } = useAuthStore();
+  const { user, onAuthSuccess, clearAuth } = useAuthStore();
+  const [userPoint, setUserPoint] = useState<number | null>(null);
+  const [expiryDate, setExpiryDate] = useState<string | null>(null);
+  const [referalCode, setReferalCode] = useState<string | null>(null);
 
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", options);
+  }
+
+  useEffect(() => {
+    const token = getCookie("access_token");
+    if (token) {
+      const decodedUser: IUser = jwtDecode(token as string);
+      onAuthSuccess(decodedUser);
+    }
+  }, [onAuthSuccess]);
+
+  useEffect(() => {
+    const getUserPoint = async () => {
+      try {
+        const response = await axiosInstance.get(`/user/point?user=${user?.user_id}`);
+        // console.log(response.data);
+        const userPointsData = response.data.data[0];
+        // console.log(userPointsData);
+
+        setUserPoint(userPointsData?.points || 0);
+        setExpiryDate(userPointsData?.expiry_date ? formatDate(userPointsData?.expiry_date) : "N/A");
+      } catch (error) {
+        ErrorHandler(error as Error);
+        setUserPoint(0);
+        setExpiryDate("N/A");
+      }
+    }
+
+    if (user) {
+      getUserPoint();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const getReferalCode = async () => {
+      try {
+        const response = await axiosInstance.get("/auth/referral-code");
+        // console.log(response.data);
+        setReferalCode(response.data.data);
+      } catch (error) {
+        ErrorHandler(error as Error);
+      }
+    }
+
+    if (user) {
+      getReferalCode();
+    }
+  }, [user])
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -81,7 +144,7 @@ export default function NavbarMenu() {
       </div>
       <div className="flex-none gap-2">
         <ul className="menu menu-horizontal px-1 flex items-center">
-        {user?.role && user?.role === "Event Organizer" && (
+          {user?.role && user?.role === "Event Organizer" && (
             <li>
               <div className="font-bold" onClick={handleEvent}>
                 Create Event
@@ -102,13 +165,23 @@ export default function NavbarMenu() {
                 <div className="dropdown dropdown-end">
                   <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                     <div className="w-10 rounded-full">
-                      <Image
-                        alt="participant"
-                        src="/participant-vector.webp"
-                        width={40}
-                        height={40}
-                        className="rounded-full"
-                      />
+                      {user?.role === "Event Organizer" ? (
+                        <Image
+                          alt="Event Organizer"
+                          src="/event-organizer-vector.webp"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <Image
+                          alt="participant"
+                          src="/participant-vector.webp"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      )}
                     </div>
                   </div>
                   <ul
@@ -118,44 +191,57 @@ export default function NavbarMenu() {
                       <div className="text-base-content font-bold text-wrap">Welcome, <br /> {user?.name}</div>
                     </li>
                     <hr />
-                    <li className="hover:bg-base-200 flex flex-col">
-                      <table>
-                        <tbody>
-                          <tr>
-                            <td>
-                              <div className="flex flex-row text-blue-600 text-bold items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                </svg>
-                                <span>Information</span>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="font-bold text-black">Points</div>
-                            </td>
-                            <td>
-                              <div className="font-bold text-black px-1">:</div>
-                            </td>
-                            <td>
-                              <div className="font-bold px-1">20.000</div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div className="font-bold text-black">Expired at</div>
-                            </td>
-                            <td>
-                              <div className="font-bold text-black px-1">:</div>
-                            </td>
-                            <td>
-                              <div className="font-bold px-1 text-nowrap">23 March 2024</div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </li>
+                    {user?.role && user?.role === "Participant" && (
+                      <li className="hover:bg-base-200 flex flex-col">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <div className="flex flex-row text-blue-600 text-bold items-center gap-1">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                  </svg>
+                                  <span>Information</span>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div className="font-bold text-black">Points</div>
+                              </td>
+                              <td>
+                                <div className="font-bold text-black px-1">:</div>
+                              </td>
+                              <td>
+                                <div className="font-bold px-1">{userPoint !== null ? userPoint.toLocaleString() : "0"}</div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div className="font-bold text-black">Expired at</div>
+                              </td>
+                              <td>
+                                <div className="font-bold text-black px-1">:</div>
+                              </td>
+                              <td>
+                                <div className="font-bold px-1 text-nowrap">{expiryDate || "N/A"}</div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div className="font-bold text-black">Referal Code</div>
+                              </td>
+                              <td>
+                                <div className="font-bold text-black px-1">:</div>
+                              </td>
+                              <td>
+                                <div className="font-bold px-1 text-nowrap">{referalCode || "N/A"}</div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </li>
+                    )}
                     <hr />
                     <li className="hover:bg-base-200 rounded-b-lg">
                       <div className="font-bold" onClick={handleLogout}>Logout</div>
