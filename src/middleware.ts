@@ -9,23 +9,30 @@ const protectedRoutes = ["/"];
 export default async function middleware(req: NextRequest) {
    try {
       const cookieStore = await cookies();
+      const token = cookieStore.get("access_token")?.value || "";
+
       const isProtected = protectedRoutes.some((path) =>
          req.nextUrl.pathname.startsWith(path)
       );
 
-      const token = cookieStore.get("access_token")?.value || "";
-      if (isProtected && !token) {
+      if (token && (req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/register"))) {
          return NextResponse.redirect(new URL("/", req.nextUrl));
       }
 
-      const user: IUser = jwtDecode(token);
+      // if (isProtected && !token) {
+      //    return NextResponse.redirect(new URL("/login", req.nextUrl));
+      // }
 
-      if (
-         isProtected &&
-         req.nextUrl.pathname.startsWith("/") &&
-         user.role != "Event Organizer"
-      ) {
-         return NextResponse.redirect(new URL("/", req.nextUrl));
+      if (token) {
+         const user: IUser = jwtDecode(token);
+
+         if (
+            isProtected &&
+            req.nextUrl.pathname.startsWith("/") &&
+            user.role != "Event Organizer"
+         ) {
+            return NextResponse.redirect(new URL("/", req.nextUrl));
+         }
       }
 
       return NextResponse.next();
@@ -35,5 +42,5 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-   matcher: "/user/:path*",
+   matcher: ["/user/:path*", "/login", "/register"],
 };
