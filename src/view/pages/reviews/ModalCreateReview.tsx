@@ -3,7 +3,8 @@ import axiosInstance from "@/app/utils/axios";
 import ErrorHandler from "@/app/lib/error-handler";
 import Swal from "sweetalert2";
 import { getCookie } from "cookies-next";
-import { IUser } from "@/stores/auth.store";
+import useAuthStore, { IUser } from "@/stores/auth.store";
+import { jwtDecode } from "jwt-decode";
 
 interface ModalCreateReviewProps {
     open: boolean; 
@@ -21,19 +22,19 @@ interface ModalCreateReviewProps {
 
 
     const [note, setNote] = useState("");
-    const [dataUser, setDataUser] = useState<IUser>();
+    const { user, onAuthSuccess, clearAuth } = useAuthStore();
 
     const handleChangeNote = (e: any) => {
         setNote(e.target.value);
     };
 
     useEffect(() => {
-        if (getCookie("user")) {
-            const cookieUser = getCookie("user");
-            const user: IUser = JSON.parse(cookieUser as string);
-            setDataUser(user);
+        const token = getCookie("access_token");
+        if (token) {
+          const decodedUser: IUser = jwtDecode(token as string);
+          onAuthSuccess(decodedUser);
         }
-    }, []);
+      }, [onAuthSuccess]);
 
 
     const handleSubmit = async (e: any) => {
@@ -57,7 +58,7 @@ interface ModalCreateReviewProps {
                     timer: 2000,
                 })
                 setOpen(false);
-                getReviewList(dataUser?.user_id as number)
+                getReviewList(user?.user_id as number)
             }
         } catch (err) {
             ErrorHandler(err as Error);

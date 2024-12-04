@@ -5,8 +5,8 @@ import ErrorHandler from "@/app/lib/error-handler";
 import ModalCreateReview from "./ModalCreateReview";
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
-import { IUser } from "@/stores/auth.store";
-
+import useAuthStore, { IUser } from "@/stores/auth.store";
+import { jwtDecode } from "jwt-decode";
 
 interface IReviewList {
     name_event: string;
@@ -22,7 +22,7 @@ const ReviewList = () => {
     const [reviewList, setReviewList] = useState<IReviewList[]>([]);
     const [modalCreateReview, setModalCreateReview] = useState<boolean>(false);  
     const [transactionId, setTransactionId] = useState<number>(0)
-
+    const { user, onAuthSuccess, clearAuth } = useAuthStore();
 
     const getReviewList = async (userId: number) => {
         try {
@@ -42,7 +42,6 @@ const ReviewList = () => {
                 };
             });
 
-            console.log(eventList)
             setReviewList(eventList);
         } catch (err) {
             ErrorHandler(err as Error);
@@ -55,16 +54,22 @@ const ReviewList = () => {
     };
 
     useEffect(() => {
-        const cookieUser = getCookie("user");
-        if (cookieUser) {
+        const token = getCookie("access_token");
+        if (token) {
+          const decodedUser: IUser = jwtDecode(token as string);
+          onAuthSuccess(decodedUser);
+        }
+      }, [onAuthSuccess]);
+
+    useEffect(() => {
+        if (user) {
           try {
-            const user: IUser = JSON.parse(cookieUser as string);
             getReviewList(user.user_id);
           } catch (error) {
             console.error("Error parsing user cookie:", error);
           }
         }
-      }, []);
+      }, [user]);
 
 
     return (
