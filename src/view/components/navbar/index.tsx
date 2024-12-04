@@ -14,7 +14,6 @@ export default function NavbarMenu() {
   const { user, onAuthSuccess, clearAuth } = useAuthStore();
   const [userPoint, setUserPoint] = useState<number | null>(null);
   const [expiryDate, setExpiryDate] = useState<string | null>(null);
-  const [referalCode, setReferalCode] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -55,22 +54,6 @@ export default function NavbarMenu() {
       getUserPoint();
     }
   }, [user]);
-
-  useEffect(() => {
-    const getReferalCode = async () => {
-      try {
-        const response = await axiosInstance.get("/auth/referral-code");
-        // console.log(response.data);
-        setReferalCode(response.data.data);
-      } catch (error) {
-        ErrorHandler(error as Error);
-      }
-    }
-
-    if (user) {
-      getReferalCode();
-    }
-  }, [user])
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -133,6 +116,10 @@ export default function NavbarMenu() {
     router.push(`/`);
   };
 
+  const handleProfile = async () => {
+    router.push(`/profile`);
+  }
+
   const handleReviews = async () => {
     router.push(`/reviews`);
   };
@@ -192,55 +179,54 @@ export default function NavbarMenu() {
                     </li>
                     <hr />
                     {user?.role && user?.role === "Participant" && (
-                      <li className="hover:bg-base-200 flex flex-col">
-                        <table>
-                          <tbody>
-                            <tr>
-                              <td>
-                                <div className="flex flex-row text-blue-600 text-bold items-center gap-1">
-                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                  </svg>
-                                  <span>Information</span>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className="font-bold text-black">Points</div>
-                              </td>
-                              <td>
-                                <div className="font-bold text-black px-1">:</div>
-                              </td>
-                              <td>
-                                <div className="font-bold px-1">{userPoint !== null ? userPoint.toLocaleString() : "0"}</div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className="font-bold text-black">Expired at</div>
-                              </td>
-                              <td>
-                                <div className="font-bold text-black px-1">:</div>
-                              </td>
-                              <td>
-                                <div className="font-bold px-1 text-nowrap">{expiryDate || "N/A"}</div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className="font-bold text-black">Referal Code</div>
-                              </td>
-                              <td>
-                                <div className="font-bold text-black px-1">:</div>
-                              </td>
-                              <td>
-                                <div className="font-bold px-1 text-nowrap">{referalCode || "N/A"}</div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </li>
+                      <>
+                        <li>
+                          <div className="font-bold flex items-center" onClick={handleProfile}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-1">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 14.25c-2.485 0-4.5-2.015-4.5-4.5S9.515 5.25 12 5.25s4.5 2.015 4.5 4.5-2.015 4.5-4.5 4.5zm0 0c-2.485 0-4.5 2.015-4.5 4.5v.75h9v-.75c0-2.485-2.015-4.5-4.5-4.5z" />
+                            </svg>
+                            Profile
+                          </div>
+                        </li>
+                        <li className="hover:bg-base-200 flex flex-col">
+                          <table>
+                            <tbody>
+                              <tr>
+                                <td>
+                                  <div className="flex flex-row text-blue-600 text-bold items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                    </svg>
+                                    <span>Information</span>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>
+                                  <div className="font-bold text-black">Points</div>
+                                </td>
+                                <td>
+                                  <div className="font-bold text-black px-1">:</div>
+                                </td>
+                                <td>
+                                  <div className="font-bold px-1">{userPoint !== null ? userPoint.toLocaleString() : "0"}</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>
+                                  <div className="font-bold text-black">Expired at</div>
+                                </td>
+                                <td>
+                                  <div className="font-bold text-black px-1">:</div>
+                                </td>
+                                <td>
+                                  <div className="font-bold px-1 text-nowrap">{expiryDate || "N/A"}</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </li>
+                      </>
                     )}
                     <hr />
                     <li className="hover:bg-base-200 rounded-b-lg">
