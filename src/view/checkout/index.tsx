@@ -8,7 +8,8 @@ import ErrorHandler from "@/app/lib/error-handler";
 import Swal from "sweetalert2";
 import ModalPayment from "./modal-payment";
 import { useRouter } from "next/navigation";
-import { IUser } from "@/stores/auth.store";
+import useAuthStore, { IUser } from "@/stores/auth.store";
+import { jwtDecode } from "jwt-decode";
 
 interface Promotion {
   valid_until: string;
@@ -74,10 +75,6 @@ interface DataCheckout {
   quantity: number;
 }
 
-interface DataUser {
-  user_id: number;
-}
-
 interface Point {
   id: number;
   user_id: number;
@@ -88,13 +85,12 @@ interface Point {
 
 export default function Checkout() {
   const router = useRouter();
-
+  const { user, onAuthSuccess, clearAuth } = useAuthStore();
   const [dataCheckout, setDataCheckout] = useState<EventResponse | null>(null);
   const [totalPayment, setTotalPayment] = useState<number>(0);
   const [subPayment, setSubPayment] = useState<number>(0);
   const [point, setPoint] = useState<number>(0);
   const [coupon, setCoupon] = useState<ICoupon[]>([]);
-  const [dataUser, setDataUser] = useState<IUser | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
   const [usePoint, setUsePoint] = useState<boolean>(false);
@@ -181,7 +177,7 @@ export default function Checkout() {
       data.append("event_quantity", dataCheckout?.quantity.toString());
       data.append("event_ticket_id", dataCheckout?.event?.ticket_id.toString());
       data.append("payment_status_id", "1"); // paid
-      data.append("user_id", dataUser?.user_id.toString() || "");
+      data.append("user_id", user?.user_id.toString() || "");
       try {
         const response = await axiosInstance.post("/transaction/create", data, {
           headers: {
@@ -216,7 +212,7 @@ export default function Checkout() {
           quantity: dataCheckout?.quantity || 0,
           ticket_id: dataCheckout?.event?.ticket_id || 0,
         },
-        user_id: dataUser?.user_id || 0,
+        user_id: user?.user_id || 0,
       });
 
       handleModal();
@@ -267,9 +263,6 @@ export default function Checkout() {
       const cookieUser = getCookie("user") as string;
   
       if (cookieUser) {
-        const user: IUser = JSON.parse(cookieUser);
-        setDataUser(user);
-  
         if (user?.user_id) {
           getPoints(user.user_id); // Pastikan getPoints memiliki tipe user_id: number
           getCoupon(user.user_id); // Pastikan getCoupon memiliki tipe user_id: number
@@ -335,6 +328,14 @@ useEffect(() => {
     }
   }
 }, [selectedOption, usePoint]);
+
+useEffect(() => {
+  const token = getCookie("access_token");
+  if (token) {
+    const decodedUser: IUser = jwtDecode(token as string);
+    onAuthSuccess(decodedUser);
+  }
+}, [onAuthSuccess]);
 
 const eventStart = dataCheckout?.event?.event_expired
   ? new Date(dataCheckout.event.event_expired)

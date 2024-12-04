@@ -8,13 +8,17 @@ import { formatDate,formatTime } from "@/app/helpers/dateFormatter";
 import { formatToIDR } from "@/app/helpers/currencyFormatter";
 import { getCookie } from "cookies-next";
 import Swal from "sweetalert2";
-import { IPromotion,IEventDetail,EventDetailProps,IUser } from "../types";
+import { IPromotion,IEventDetail,EventDetailProps } from "../types";
+import useAuthStore, { IUser } from "@/stores/auth.store";
+import { jwtDecode } from "jwt-decode";
+
 
 export default function EventDetail({ event_id }: EventDetailProps) {
     const router = useRouter();
+    const { user, onAuthSuccess, clearAuth } = useAuthStore();
+
     const [eventDetail, setEventDetail] = useState<IEventDetail | null>(null);
     const [promoDetail, setPromoDetail] = useState<IPromotion[] | null>(null);
-    const [dataUser, setDataUser] = useState<IUser>();
   
     // Mengonversi string tanggal menjadi objek Date
     const date = eventDetail?.event_expired ? new Date(eventDetail.event_expired) : null;
@@ -37,7 +41,7 @@ export default function EventDetail({ event_id }: EventDetailProps) {
     };
   
     const handleCheckOut = () => {
-      if (!dataUser?.user_id) {
+      if (!user?.user_id) {
         Swal.fire({
           icon: "warning",
           title: "Please Log In",
@@ -75,12 +79,12 @@ export default function EventDetail({ event_id }: EventDetailProps) {
     }, [event_id]);
   
     useEffect(() => {
-      if (getCookie("user")) {
-        const cookieUser = getCookie("user");
-        const user: IUser = JSON.parse(cookieUser);
-        setDataUser(user);
+      const token = getCookie("access_token");
+      if (token) {
+        const decodedUser: IUser = jwtDecode(token as string);
+        onAuthSuccess(decodedUser);
       }
-    }, []);
+    }, [onAuthSuccess]);
   
     return (
       <div className="container mx-auto p-2">
@@ -189,7 +193,7 @@ export default function EventDetail({ event_id }: EventDetailProps) {
               eventDetail?.promotion_type_id > 1 && (
                 <div className="container mx-auto p-6 shadow-xl bg-orange-300 rounded-lg">
                   <h1 className="text-lg font-bold text-center mb-2">PROMO</h1>
-                  {promoDetail?.length > 0 &&
+                  {promoDetail && promoDetail?.length > 0 &&
                     promoDetail[0]?.promotion_type_id === 3 && (
                       <div className="flex justify-center items-center space-x-4">
                         <p>
@@ -198,7 +202,7 @@ export default function EventDetail({ event_id }: EventDetailProps) {
                         </p>
                       </div>
                     )}
-                  {promoDetail?.length > 0 &&
+                  {promoDetail && promoDetail?.length > 0 &&
                     promoDetail[0]?.promotion_type_id === 2 && (
                       <div className="flex justify-center items-center space-x-4">
                         <p>
